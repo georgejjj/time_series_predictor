@@ -8,8 +8,9 @@ from datetime import datetime
 
 # 设置绘图风格
 sns.set_style("whitegrid")
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+# 移除中文字体设置
+# plt.rcParams['font.sans-serif'] = ['SimHei']  
+# plt.rcParams['axes.unicode_minus'] = False  
 
 def download_fred_data(series_id, start_date, end_date):
     """
@@ -89,13 +90,13 @@ def plot_predictions(actual, predicted, dates):
         predicted = predicted[:n]
     
     # 绘制实际值和预测值
-    ax.plot(dates[:n], actual[:n], label='实际值', marker='o', linestyle='-', color='blue')
-    ax.plot(dates[:n], predicted[:n], label='预测值', marker='x', linestyle='--', color='red')
+    ax.plot(dates[:n], actual[:n], label='Actual', marker='o', linestyle='-', color='blue')
+    ax.plot(dates[:n], predicted[:n], label='Predicted', marker='x', linestyle='--', color='red')
     
     # 添加图例和标签
-    ax.set_title('预测结果与实际值比较')
-    ax.set_xlabel('日期')
-    ax.set_ylabel('收益率')
+    ax.set_title('Comparison of Predictions and Actual Values')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Return')
     ax.legend()
     ax.grid(True)
     
@@ -169,5 +170,5 @@ def calculate_metrics(actual, predicted):
         "MAPE (%)": round(mape, 2) if not np.isnan(mape) else np.nan,
         "MAE": round(mae, 6) if not np.isnan(mae) else np.nan,
         "R²": round(r2, 4) if not np.isnan(r2) else np.nan,
-        "方向准确率 (%)": round(dir_accuracy, 2) if not np.isnan(dir_accuracy) else np.nan
+        "Direction Accuracy (%)": round(dir_accuracy, 2) if not np.isnan(dir_accuracy) else np.nan
     } 

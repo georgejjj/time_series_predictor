@@ -166,9 +166,10 @@ if st.button("开始预测"):
                         # 计算并显示评估指标
                         metrics = calculate_metrics(test_data.values[:len(y_pred)], y_pred)
                         
+                        # 创建包含英文指标名称的DataFrame
                         metrics_df = pd.DataFrame({
-                            "指标": list(metrics.keys()),
-                            "值": list(metrics.values())
+                            "Metric": list(metrics.keys()),
+                            "Value": list(metrics.values())
                         })
                         
                         st.table(metrics_df)
@@ -199,7 +200,7 @@ if st.button("开始预测"):
                 
                 # 绘制实际值
                 ax.plot(test_data.index[:plot_length], test_data.values[:plot_length].flatten(), 
-                        label='实际值', color='black', linestyle='--')
+                        label='Actual', color='black', linestyle='--')
                 
                 # 绘制各模型预测值
                 colors = ['blue', 'red', 'green']
@@ -209,12 +210,29 @@ if st.button("开始预测"):
                     if len(model_pred) > plot_length:
                         model_pred = model_pred[:plot_length]
                     
+                    # 将中文模型名称转换为英文显示在图表中
+                    model_name_eng = model_name
+                    if model_name == "线性模型":
+                        model_name_eng = "Linear Model"
+                    elif model_name == "LSTM":
+                        model_name_eng = "LSTM"
+                    elif model_name == "Transformer":
+                        model_name_eng = "Transformer"
+                    
                     ax.plot(test_data.index[:len(model_pred)], model_pred, 
-                            label=f'{model_name}预测', color=colors[i % len(colors)])
+                            label=f'{model_name_eng} Prediction', color=colors[i % len(colors)])
                 
-                ax.set_title('模型预测比较')
-                ax.set_xlabel('日期')
-                ax.set_ylabel(return_type)
+                ax.set_title('Model Prediction Comparison')
+                ax.set_xlabel('Date')
+                
+                # 根据收益率类型设置英文标签
+                return_type_eng = "Daily Return"
+                if return_type == "周收益率":
+                    return_type_eng = "Weekly Return"
+                elif return_type == "月收益率":
+                    return_type_eng = "Monthly Return"
+                
+                ax.set_ylabel(return_type_eng)
                 ax.legend()
                 ax.grid(True)
                 
