@@ -15,8 +15,8 @@
 
 1. 克隆本仓库:
 ```
-git clone https://github.com/yourusername/financial_prediction.git
-cd financial_prediction
+git clone https://github.com/georgejjj/time_series_predictor.git
+cd time_series_predictor
 ```
 
 2. 安装依赖:
