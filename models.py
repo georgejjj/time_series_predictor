@@ -22,6 +22,12 @@ class BaseModel:
             X.append(data[i:i+self.lookback])
             y.append(data[i+self.lookback])
         return np.array(X), np.array(y)
+
+    def train_val_split(self, X, y, val_ratio=0.2):
+        """按时间顺序切分训练集/验证集，避免时间序列泄露"""
+        split_idx = int(len(X) * (1 - val_ratio))
+        split_idx = max(1, min(split_idx, len(X) - 1))
+        return X[:split_idx], y[:split_idx], X[split_idx:], y[split_idx:]
     
     def fit(self, data):
         """训练模型"""
@@ -94,7 +100,7 @@ class LinearModel(BaseModel):
 
 # LSTM模型
 class LSTMModel(BaseModel):
-    def __init__(self, lookback=20, units=50, epochs=100, batch_size=32):
+    def __init__(self, lookback=20, units=64, epochs=100, batch_size=32):
         super().__init__(lookback)
         self.units = units
         self.epochs = epochs
@@ -104,13 +110,16 @@ class LSTMModel(BaseModel):
     def build_model(self, input_shape):
         model = Sequential([
             LSTM(units=self.units, return_sequences=True, input_shape=input_shape),
-            Dropout(0.2),
+            Dropout(0.1),
             LSTM(units=self.units//2),
-            Dropout(0.2),
+            Dropout(0.1),
             Dense(1)
         ])
         
-        model.compile(optimizer='adam', loss='mse')
+        model.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+            loss=tf.keras.losses.Huber()
+        )
         return model
         
     def fit(self, data):
@@ -133,13 +142,16 @@ class LSTMModel(BaseModel):
             restore_best_weights=True
         )
         
-        # 训练模型
+        X_train, y_train, X_val, y_val = self.train_val_split(X_reshaped, y)
+
+        # 训练模型（时间序列不打乱）
         self.model.fit(
-            X_reshaped, y,
+            X_train, y_train,
             epochs=self.epochs,
             batch_size=self.batch_size,
-            validation_split=0.2,
+            validation_data=(X_val, y_val),
             callbacks=[early_stopping],
+            shuffle=False,
             verbose=0
         )
         
@@ -251,7 +263,7 @@ class TransformerModel(BaseModel):
         model = Model(inputs=inputs, outputs=outputs)
         model.compile(
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
-            loss="mse"
+            loss=tf.keras.losses.Huber()
         )
         return model
         
@@ -283,13 +295,16 @@ class TransformerModel(BaseModel):
             min_lr=0.0001
         )
         
-        # 训练模型
-        history = self.model.fit(
-            X_reshaped, y,
+        X_train, y_train, X_val, y_val = self.train_val_split(X_reshaped, y)
+
+        # 训练模型（时间序列不打乱）
+        self.model.fit(
+            X_train, y_train,
             epochs=self.epochs,
             batch_size=32,
-            validation_split=0.2,
+            validation_data=(X_val, y_val),
             callbacks=[early_stopping, reduce_lr],
+            shuffle=False,
             verbose=0
         )
         
